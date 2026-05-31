@@ -74,6 +74,3 @@ train-reservation/
 │   └── application.properties
 └── pom.xml
 ```
-
-## Resume Description
-> *"Developed a full-stack Train Reservation System using Java Spring Boot REST API with H2 in-memory database and a vanilla JS frontend. Implemented features including train search, ticket booking with dynamic fare calculation by seat class, PNR status tracking, and ticket cancellation with live seat availability updates."*
