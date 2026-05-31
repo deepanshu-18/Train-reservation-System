@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TrainGo — Reservation System</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f5f4f0;
+  --white:#ffffff;
+  --surface:#fafaf8;
+  --border:#e2e0d8;
+  --border2:#ccc9be;
+  --text:#1a1917;
+  --muted:#7c7a72;
+  --accent:#e85d26;
+  --accent-light:#fdf0ea;
+  --accent-dark:#c04a1c;
+  --green:#2d7a4f;
+  --green-bg:#edf7f2;
+  --red:#c0392b;
+  --red-bg:#fdf0ee;
+  --blue:#1a5fa8;
+  --blue-bg:#eef4fd;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'Outfit',sans-serif;
+  --radius:12px;
+  --shadow:0 2px 12px rgba(0,0,0,0.07);
+}
+body{background:var(--bg);font-family:var(--sans);color:var(--text);min-height:100vh;}
+
+/* NAV */
+nav{background:var(--white);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:62px;position:sticky;top:0;z-index:100;}
+.nav-logo{display:flex;align-items:center;gap:10px;font-size:1.2rem;font-weight:700;letter-spacing:-0.02em;}
+.logo-badge{background:var(--accent);color:#fff;padding:4px 10px;border-radius:6px;font-size:0.85rem;font-weight:700;}
+.nav-tabs{display:flex;gap:4px;}
+.nav-tab{padding:7px 16px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:500;color:var(--muted);border:none;background:none;transition:all .15s;font-family:var(--sans);}
+.nav-tab:hover{background:var(--bg);color:var(--text);}
+.nav-tab.active{background:var(--accent-light);color:var(--accent);font-weight:600;}
+
+/* HERO */
+.hero{background:var(--text);color:white;padding:3rem 2rem 2.5rem;text-align:center;}
+.hero h1{font-size:2.4rem;font-weight:700;letter-spacing:-0.03em;margin-bottom:.5rem;}
+.hero h1 span{color:var(--accent);}
+.hero p{color:rgba(255,255,255,0.55);font-size:1rem;}
+
+/* SEARCH BAR */
+.search-bar{background:var(--white);border-bottom:1px solid var(--border);padding:1.2rem 2rem;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;}
+.search-field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:140px;}
+.search-field label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+.search-field input, .search-field select{
+  padding:9px 12px;border:1px solid var(--border2);border-radius:8px;
+  font-family:var(--sans);font-size:14px;color:var(--text);background:var(--surface);
+  outline:none;transition:border-color .15s;
+}
+.search-field input:focus,.search-field select:focus{border-color:var(--accent);}
+.btn{padding:10px 20px;border-radius:8px;border:none;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.btn:active{transform:scale(0.97);}
+.btn-primary{background:var(--accent);color:white;}
+.btn-primary:hover{background:var(--accent-dark);}
+.btn-secondary{background:var(--bg);border:1px solid var(--border2);color:var(--text);}
+.btn-secondary:hover{background:var(--border);}
+.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid #f5c6c2;}
+.btn-danger:hover{background:#fae0dc;}
+.btn-sm{padding:6px 14px;font-size:13px;}
+
+/* MAIN */
+main{max-width:1100px;margin:0 auto;padding:2rem;}
+.page{display:none;}
+.page.active{display:block;}
+
+/* CARDS */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow);}
+.section-title{font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:1rem;}
+
+/* TRAIN LIST */
+.train-list{display:flex;flex-direction:column;gap:12px;}
+.train-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem 1.5rem;display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:center;transition:border-color .2s,box-shadow .2s;}
+.train-card:hover{border-color:var(--accent);box-shadow:0 4px 16px rgba(232,93,38,.1);}
+.train-name{font-size:1rem;font-weight:700;margin-bottom:2px;}
+.train-number{font-family:var(--mono);font-size:12px;color:var(--muted);}
+.train-route{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:14px;}
+.train-route .city{font-weight:600;}
+.train-route .time{font-family:var(--mono);font-size:13px;color:var(--muted);}
+.route-line{flex:1;height:1px;background:var(--border2);position:relative;max-width:120px;}
+.route-line::after{content:'▶';position:absolute;right:-6px;top:-7px;font-size:10px;color:var(--border2);}
+.train-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:8px;}
+.fare{font-size:1.3rem;font-weight:700;color:var(--accent);}
+.seats-badge{font-size:12px;padding:3px 10px;border-radius:20px;font-weight:500;}
+.seats-ok{background:var(--green-bg);color:var(--green);}
+.seats-low{background:#fef9e7;color:#d68910;}
+.seats-none{background:var(--red-bg);color:var(--red);}
+.train-type-badge{font-size:11px;padding:2px 8px;border-radius:4px;font-family:var(--mono);background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+
+/* BOOKING FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-field{display:flex;flex-direction:column;gap:5px;}
+.form-field.full{grid-column:1/-1;}
+.form-field label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+.form-field input,.form-field select{
+  padding:10px 12px;border:1px solid var(--border2);border-radius:8px;
+  font-family:var(--sans);font-size:14px;color:var(--text);outline:none;
+  transition:border-color .15s;background:var(--surface);
+}
+.form-field input:focus,.form-field select:focus{border-color:var(--accent);}
+
+/* PNR STATUS */
+.pnr-result{margin-top:1.5rem;}
+.status-card{border-radius:var(--radius);padding:1.5rem;border:1px solid;}
+.status-confirmed{background:var(--green-bg);border-color:#a8d5be;}
+.status-cancelled{background:var(--red-bg);border-color:#f5c6c2;}
+.status-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.status-badge{padding:4px 14px;border-radius:20px;font-size:13px;font-weight:600;}
+.badge-confirmed{background:var(--green);color:white;}
+.badge-cancelled{background:var(--red);color:white;}
+.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:1rem;}
+.info-item .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600;}
+.info-item .val{font-size:14px;font-weight:600;margin-top:2px;}
+.pnr-big{font-family:var(--mono);font-size:1.5rem;font-weight:700;letter-spacing:.05em;}
+
+/* BOOKINGS TABLE */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{padding:10px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid var(--border);background:var(--surface);}
+td{padding:12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--surface);}
+.pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.pill-confirmed{background:var(--green-bg);color:var(--green);}
+.pill-cancelled{background:var(--red-bg);color:var(--red);}
+
+/* TOAST */
+#toast-wrap{position:fixed;bottom:1.5rem;right:1.5rem;display:flex;flex-direction:column;gap:8px;z-index:999;}
+.toast{background:var(--text);color:white;padding:12px 18px;border-radius:10px;font-size:13px;font-family:var(--mono);max-width:300px;animation:toastIn .2s ease;display:flex;align-items:center;gap:8px;}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+.toast.success{border-left:4px solid #2ecc71;}
+.toast.error{border-left:4px solid var(--red);}
+.toast.info{border-left:4px solid #3498db;}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:3rem;color:var(--muted);}
+.empty-icon{font-size:3rem;margin-bottom:1rem;}
+.empty-state p{font-size:14px;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--white);border-radius:16px;padding:2rem;width:100%;max-width:480px;margin:1rem;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;}
+.modal-title{font-size:1.1rem;font-weight:700;}
+.close-btn{background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--muted);line-height:1;}
+.modal-train-info{background:var(--bg);border-radius:10px;padding:12px 16px;margin-bottom:1.5rem;font-size:14px;}
+.modal-train-info strong{font-size:15px;display:block;margin-bottom:4px;}
+.modal-train-info span{color:var(--muted);font-size:13px;}
+
+@media(max-width:640px){
+  .form-grid{grid-template-columns:1fr;}
+  .hero h1{font-size:1.6rem;}
+  nav{padding:0 1rem;}
+  main{padding:1rem;}
+  .search-bar{padding:1rem;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <span class="logo-badge">🚆</span>
+    TrainGo
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('search')">Search Trains</button>
+    <button class="nav-tab" onclick="showPage('pnr')">PNR Status</button>
+    <button class="nav-tab" onclick="showPage('bookings')">My Bookings</button>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>Book Your <span>Train Ticket</span></h1>
+  <p>Search trains, book tickets, check PNR status instantly</p>
+</div>
+
+<!-- SEARCH BAR -->
+<div class="search-bar">
+  <div class="search-field">
+    <label>From</label>
+    <input type="text" id="srcInput" placeholder="e.g. Mumbai" list="cities"/>
+  </div>
+  <div class="search-field">
+    <label>To</label>
+    <input type="text" id="dstInput" placeholder="e.g. Delhi" list="cities"/>
+  </div>
+  <datalist id="cities">
+    <option value="Mumbai"/><option value="Delhi"/><option value="Chennai"/>
+    <option value="Kolkata"/><option value="Bangalore"/><option value="Pune"/>
+  </datalist>
+  <button class="btn btn-primary" onclick="searchTrains()">Search Trains</button>
+  <button class="btn btn-secondary" onclick="loadAllTrains()">View All</button>
+</div>
+
+<main>
+
+  <!-- SEARCH PAGE -->
+  <div id="page-search" class="page active">
+    <div class="section-title" id="searchLabel">All Available Trains</div>
+    <div id="trainList" class="train-list">
+      <div class="empty-state"><div class="empty-icon">🚆</div><p>Loading trains...</p></div>
+    </div>
+  </div>
+
+  <!-- PNR PAGE -->
+  <div id="page-pnr" class="page">
+    <div class="card" style="max-width:500px;">
+      <div class="section-title">Check PNR Status</div>
+      <div style="display:flex;gap:10px;">
+        <input type="text" id="pnrInput" placeholder="Enter PNR number e.g. PNR123456"
+               style="flex:1;padding:10px 12px;border:1px solid var(--border2);border-radius:8px;font-family:var(--sans);font-size:14px;outline:none;"/>
+        <button class="btn btn-primary" onclick="checkPnr()">Check</button>
+      </div>
+      <div id="pnrResult" class="pnr-result"></div>
+    </div>
+  </div>
+
+  <!-- BOOKINGS PAGE -->
+  <div id="page-bookings" class="page">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <div class="section-title" style="margin:0;">All Bookings</div>
+        <button class="btn btn-secondary btn-sm" onclick="loadBookings()">↻ Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <div id="bookingsTable"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- BOOKING MODAL -->
+<div class="modal-overlay" id="bookingModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Book Ticket</span>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-train-info" id="modalTrainInfo"></div>
+    <div class="form-grid">
+      <div class="form-field full">
+        <label>Passenger Name</label>
+        <input type="text" id="passengerName" placeholder="Full name"/>
+      </div>
+      <div class="form-field">
+        <label>Age</label>
+        <input type="number" id="passengerAge" placeholder="Age" min="1" max="120"/>
+      </div>
+      <div class="form-field">
+        <label>Gender</label>
+        <select id="passengerGender">
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-field full">
+        <label>Seat Class</label>
+        <select id="seatClass">
+          <option value="SL">Sleeper (SL)</option>
+          <option value="3AC">3rd AC (3AC)</option>
+          <option value="2AC">2nd AC (2AC)</option>
+          <option value="1AC">1st AC (1AC)</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-top:1.2rem;padding:12px;" onclick="confirmBooking()">
+      Confirm Booking
+    </button>
+  </div>
+</div>
+
+<div id="toast-wrap"></div>
+
+<script>
+const API = 'http://localhost:8080/api';
+let selectedTrainId = null;
+let selectedTrain = null;
+
+// PAGE NAV
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'bookings') loadBookings();
+}
+
+// TOAST
+function toast(msg, type = 'info') {
+  const wrap = document.getElementById('toast-wrap');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// RENDER TRAINS
+function renderTrains(trains) {
+  const list = document.getElementById('trainList');
+  if (!trains.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><p>No trains found for this route.</p></div>`;
+    return;
+  }
+  list.innerHTML = trains.map(t => {
+    const seatsBadge = t.availableSeats === 0
+      ? `<span class="seats-badge seats-none">Fully Booked</span>`
+      : t.availableSeats < 20
+        ? `<span class="seats-badge seats-low">${t.availableSeats} seats left</span>`
+        : `<span class="seats-badge seats-ok">${t.availableSeats} seats available</span>`;
+    return `
+    <div class="train-card">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+          <span class="train-name">${t.trainName}</span>
+          <span class="train-type-badge">${t.trainType}</span>
+        </div>
+        <div class="train-number">#${t.trainNumber}</div>
+        <div class="train-route">
+          <div><div class="city">${t.source}</div><div class="time">${t.departureTime}</div></div>
+          <div class="route-line"></div>
+          <div><div class="city">${t.destination}</div><div class="time">${t.arrivalTime}</div></div>
+        </div>
+      </div>
+      <div class="train-right">
+        <div class="fare">₹${t.fare.toLocaleString('en-IN')}</div>
+        ${seatsBadge}
+        <button class="btn btn-primary btn-sm" ${t.availableSeats === 0 ? 'disabled style="opacity:.5;cursor:not-allowed;"' : `onclick="openBooking(${t.id})"`}>
+          Book Now
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// LOAD ALL TRAINS
+async function loadAllTrains() {
+  document.getElementById('searchLabel').textContent = 'All Available Trains';
+  document.getElementById('trainList').innerHTML = `<div class="empty-state"><p>Loading...</p></div>`;
+  try {
+    const res = await fetch(`${API}/trains`);
+    const trains = await res.json();
+    renderTrains(trains);
+  } catch (e) {
+    document.getElementById('trainList').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><p>Could not connect to server. Make sure Spring Boot is running on port 8080.</p></div>`;
+  }
+}
+
+// SEARCH TRAINS
+async function searchTrains() {
+  const src = document.getElementById('srcInput').value.trim();
+  const dst = document.getElementById('dstInput').value.trim();
+  if (!src || !dst) { toast('Please enter both source and destination', 'error'); return; }
+  document.getElementById('searchLabel').textContent = `Trains: ${src} → ${dst}`;
+  document.getElementById('trainList').innerHTML = `<div class="empty-state"><p>Searching...</p></div>`;
+  try {
+    const res = await fetch(`${API}/trains/search?source=${encodeURIComponent(src)}&destination=${encodeURIComponent(dst)}`);
+    const trains = await res.json();
+    renderTrains(trains);
+  } catch (e) {
+    toast('Server error. Is Spring Boot running?', 'error');
+  }
+}
+
+// OPEN BOOKING MODAL
+async function openBooking(trainId) {
+  try {
+    const res = await fetch(`${API}/trains/${trainId}`);
+    const train = await res.json();
+    selectedTrainId = trainId;
+    selectedTrain = train;
+    document.getElementById('modalTrainInfo').innerHTML = `
+      <strong>${train.trainName} (${train.trainNumber})</strong>
+      <span>${train.source} → ${train.destination} &nbsp;|&nbsp; Dep: ${train.departureTime} &nbsp;|&nbsp; Base Fare: ₹${train.fare}</span>`;
+    document.getElementById('passengerName').value = '';
+    document.getElementById('passengerAge').value = '';
+    document.getElementById('bookingModal').classList.add('open');
+  } catch(e) { toast('Failed to load train details', 'error'); }
+}
+
+function closeModal() {
+  document.getElementById('bookingModal').classList.remove('open');
+  selectedTrainId = null;
+}
+
+// CONFIRM BOOKING
+async function confirmBooking() {
+  const name = document.getElementById('passengerName').value.trim();
+  const age = document.getElementById('passengerAge').value;
+  const gender = document.getElementById('passengerGender').value;
+  const seatClass = document.getElementById('seatClass').value;
+  if (!name) { toast('Enter passenger name', 'error'); return; }
+  if (!age || age < 1) { toast('Enter valid age', 'error'); return; }
+  try {
+    const res = await fetch(`${API}/bookings/book`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ trainId: selectedTrainId, passengerName: name, age, gender, seatClass })
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeModal();
+      toast(`Booked! PNR: ${data.booking.pnr}`, 'success');
+      loadAllTrains();
+    } else {
+      toast(data.message, 'error');
+    }
+  } catch(e) { toast('Booking failed. Server error.', 'error'); }
+}
+
+// CHECK PNR
+async function checkPnr() {
+  const pnr = document.getElementById('pnrInput').value.trim();
+  if (!pnr) { toast('Enter PNR number', 'error'); return; }
+  try {
+    const res = await fetch(`${API}/bookings/status/${pnr}`);
+    const data = await res.json();
+    const el = document.getElementById('pnrResult');
+    if (!data.success) {
+      el.innerHTML = `<div class="status-card status-cancelled" style="margin-top:1rem;"><strong>❌ ${data.message}</strong></div>`;
+      return;
+    }
+    const b = data.booking;
+    const isConfirmed = b.status === 'CONFIRMED';
+    el.innerHTML = `
+      <div class="status-card ${isConfirmed ? 'status-confirmed' : 'status-cancelled'}">
+        <div class="status-header">
+          <div class="pnr-big">${b.pnr}</div>
+          <span class="status-badge ${isConfirmed ? 'badge-confirmed' : 'badge-cancelled'}">${b.status}</span>
+        </div>
+        <div class="info-grid">
+          <div class="info-item"><div class="lbl">Passenger</div><div class="val">${b.passengerName}</div></div>
+          <div class="info-item"><div class="lbl">Age / Gender</div><div class="val">${b.passengerAge} / ${b.passengerGender}</div></div>
+          <div class="info-item"><div class="lbl">Train</div><div class="val">${b.train.trainName}</div></div>
+          <div class="info-item"><div class="lbl">Route</div><div class="val">${b.train.source} → ${b.train.destination}</div></div>
+          <div class="info-item"><div class="lbl">Seat</div><div class="val">${b.seatNumber} (${b.seatClass})</div></div>
+          <div class="info-item"><div class="lbl">Fare Paid</div><div class="val">₹${b.totalFare}</div></div>
+        </div>
+        ${isConfirmed ? `<button class="btn btn-danger btn-sm" style="margin-top:1rem;" onclick="cancelTicket('${b.pnr}')">Cancel Ticket</button>` : ''}
+      </div>`;
+  } catch(e) { toast('Server error', 'error'); }
+}
+
+// CANCEL TICKET
+async function cancelTicket(pnr) {
+  if (!confirm(`Cancel ticket ${pnr}?`)) return;
+  try {
+    const res = await fetch(`${API}/bookings/cancel/${pnr}`, { method: 'PUT' });
+    const data = await res.json();
+    toast(data.message, data.success ? 'success' : 'error');
+    if (data.success) checkPnr();
+  } catch(e) { toast('Server error', 'error'); }
+}
+
+// LOAD ALL BOOKINGS
+async function loadBookings() {
+  document.getElementById('bookingsTable').innerHTML = '<p style="color:var(--muted);font-size:14px;padding:1rem 0;">Loading...</p>';
+  try {
+    const res = await fetch(`${API}/bookings`);
+    const bookings = await res.json();
+    if (!bookings.length) {
+      document.getElementById('bookingsTable').innerHTML = `<div class="empty-state"><div class="empty-icon">🎫</div><p>No bookings yet.</p></div>`;
+      return;
+    }
+    document.getElementById('bookingsTable').innerHTML = `
+      <table>
+        <thead><tr>
+          <th>PNR</th><th>Passenger</th><th>Train</th><th>Route</th><th>Seat</th><th>Fare</th><th>Status</th><th>Action</th>
+        </tr></thead>
+        <tbody>
+          ${bookings.map(b => `
+            <tr>
+              <td style="font-family:var(--mono);font-size:12px;font-weight:600;">${b.pnr}</td>
+              <td>${b.passengerName}<br/><span style="font-size:11px;color:var(--muted)">${b.passengerAge}y / ${b.passengerGender}</span></td>
+              <td style="font-size:13px;">${b.train.trainName}<br/><span style="font-size:11px;color:var(--muted)">#${b.train.trainNumber}</span></td>
+              <td style="font-size:13px;">${b.train.source} → ${b.train.destination}</td>
+              <td style="font-family:var(--mono);font-size:13px;">${b.seatNumber}<br/><span style="font-size:11px;color:var(--muted)">${b.seatClass}</span></td>
+              <td style="font-weight:600;color:var(--accent);">₹${b.totalFare}</td>
+              <td><span class="pill ${b.status === 'CONFIRMED' ? 'pill-confirmed' : 'pill-cancelled'}">${b.status}</span></td>
+              <td>${b.status === 'CONFIRMED'
+                ? `<button class="btn btn-danger btn-sm" onclick="cancelFromTable('${b.pnr}')">Cancel</button>`
+                : '<span style="font-size:12px;color:var(--muted);">—</span>'}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`;
+  } catch(e) {
+    document.getElementById('bookingsTable').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><p>Could not connect to server.</p></div>`;
+  }
+}
+
+async function cancelFromTable(pnr) {
+  if (!confirm(`Cancel ticket ${pnr}?`)) return;
+  try {
+    const res = await fetch(`${API}/bookings/cancel/${pnr}`, { method: 'PUT' });
+    const data = await res.json();
+    toast(data.message, data.success ? 'success' : 'error');
+    if (data.success) loadBookings();
+  } catch(e) { toast('Server error', 'error'); }
+}
+
+// CLOSE MODAL ON OVERLAY CLICK
+document.getElementById('bookingModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// INIT
+loadAllTrains();
+</script>
+</body>
+</html>
